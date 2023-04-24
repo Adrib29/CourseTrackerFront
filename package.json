@@ -1,0 +1,46 @@
+{
+  "name": "vue-coursetracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "build-only": "vite build",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
+  },
+  "main": "background.js",
+  "dependencies": {
+    "@vue/cli": "^5.0.8",
+    "bootstrap": "5.2.3",
+    "font-awesome": "4.7.0",
+    "gpxparser": "^3.0.8",
+    "axios": "1.2.1",
+    "vue": "^3.2.47",
+    "vue-router": "4.1.6",
+    "vue3-google-map": "^0.15.0"
+  },
+  "devDependencies": {
+    "@pinia/testing": "0.0.14",
+    "@rushstack/eslint-patch": "1.2.0",
+    "@types/jsdom": "20.0.1",
+    "@types/node": "18.11.18",
+    "@types/vue-router": "^2.0.0",
+    "@vitejs/plugin-vue": "4.0.0",
+    "@vitest/coverage-istanbul": "0.26.3",
+    "@vue/eslint-config-prettier": "7.0.0",
+    "@vue/eslint-config-typescript": "11.0.2",
+    "@vue/test-utils": "2.2.7",
+    "@vue/tsconfig": "0.1.3",
+    "@vue/cli-service": "~5.0.0",
+    "electron": "^12.0.0",
+    "electron-devtools-installer": "^3.1.0",
+    "vue-cli-plugin-electron-builder": "^2.0.0",
+    "vue-template-compiler": "^2.6.11",
+    "typescript": "4.9.4",
+    "vite": "4.0.4"
+  }
+}
