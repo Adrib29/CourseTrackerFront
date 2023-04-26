@@ -6,6 +6,7 @@ import ParcoursDetail from './views/ParcoursDetail.vue';
 import ParcoursAdd from './views/ParcoursAdd.vue';
 import EtapesList from './views/EtapesList.vue';
 import EtapeDetail from './components/Etape.vue';
+import EtapeAdd from './views/EtapeAdd.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -44,6 +45,11 @@ const router = createRouter({
       path: '/parcours/:parcoursId/etape/:etapeId',
       name: 'etapeDetail',
       component: EtapeDetail
+    },
+    {
+      path: '/parcours/:parcoursId/etape/add',
+      name: 'etapeAdd',
+      component: EtapeAdd
     },
   ]
 });

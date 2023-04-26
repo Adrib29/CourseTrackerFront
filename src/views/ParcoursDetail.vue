@@ -15,6 +15,7 @@
     
     <button type="button" class="btn btn-danger" @click="deleteParcours"> Supprimer</button>
     <RouterLink class="btn btn-primary" :to="{ name: 'etapesList', params: { parcoursId: parcoursId } }"> Les étapes </RouterLink>
+    <RouterLink class="btn btn-primary" :to="{ name: 'etapeAdd', params: { parcoursId: parcoursId } }"> Ajouter etape </RouterLink>
 </template>
   
 <script setup lang="ts">

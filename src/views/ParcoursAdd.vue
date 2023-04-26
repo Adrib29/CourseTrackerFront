@@ -2,11 +2,6 @@
     <div class="row">
       <div class="col-md-6 offset-md-3">
         <h1> Ajouter un parcours </h1>
-  
-        <Alert v-if="authenticationFailed" variant="danger" dismissible @dismissed="authenticationFailed = false">
-            Erreur
-        </Alert>
- 
         <form @submit.prevent="submitForm" class="row g-3">
           <div class="mb-3">
             <label class="from-control">Nom du parcours</label>
@@ -32,13 +27,12 @@
   import { ErrorMessage, Field, Form } from 'vee-validate';
   import { useForms } from '../composables/Forms';
   import { ParcoursModel } from '../models/ParcoursModel';
-import { useParcoursService } from '../composables/ParcoursService';
-import { CoordonnesModel } from '@/models/CoordonnesModel';
+  import { useParcoursService } from '../composables/ParcoursService';
+  import { CoordonnesModel } from '@/models/CoordonnesModel';
   
 
   useForms();
   const router = useRouter();
-  const authenticationFailed = ref(false);
   const parcoursService = useParcoursService();
   const submitFailed = ref(false);
   const nom = ref("");
@@ -48,35 +42,24 @@ import { CoordonnesModel } from '@/models/CoordonnesModel';
 
 async function submitForm() {
     const formData = new FormData();
-      formData.append('nom', nom.value);
-      formData.append('fichierGpx', fichierGpx.value);
-      console.log("submit");  
+    formData.append('nom', nom.value);
+    formData.append('fichierGpx', fichierGpx.value);
+    console.log("submit");  
       
 
     const coordinates: CoordonnesModel[] = [];
     var coord: CoordonnesModel[] = [];
     const nouveauParcours: ParcoursModel = { nom: nom.value, coordonneesList: coordinates };
     var parcours: ParcoursModel;
-    authenticationFailed.value = false;
     parcours  = await parcoursService.setParcours(nouveauParcours);
 
-
+    //ajout des coordonnées après obtention de l'id
     update(parcours.id!);
 }
 
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
-
-async function pause() {
-  console.log('start');
-  await delay(10000);
-  console.log('end');
-}
 async function update(id : number) {
     var parcours: ParcoursModel;
-    authenticationFailed.value = false;
     parcours  = await parcoursService.getParcours(id);
     var coord: CoordonnesModel[] = [];
         try{
@@ -88,8 +71,6 @@ async function update(id : number) {
         } catch(e){
 
         }
-    
-
 }
 
 function handleFileChange(event: Event) {
