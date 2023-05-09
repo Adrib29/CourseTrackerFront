@@ -4,7 +4,7 @@
     <div class="col-md-8">
       <GoogleMap
           api-key=""
-          style="width: 100%; height: 900px"
+          style="width: 100%; height: 700px"
           :zoom="zoomValue"
           :center="center"
           >
@@ -12,8 +12,9 @@
           </Polyline>
       
           <template v-for="(etape, index) in etapesModel" :key="index" >
-            <Polyline v-if="etape.coordonneesList" :options="{ path: CoordToPosition(etape.coordonneesList),...etapePath }" @click="showInfoEtape(etape)"/> 
+            <Polyline v-if="etape.coordonneesList" :options="{ path: CoordToPosition(etape.coordonneesList),...etapePath }" @click="onEtapeClick(etape, index)" /> 
           </template>
+            <Polyline v-if="etapeSelectedInList?.coordonneesList" :options="{ path: CoordToPosition(etapeSelectedInList.coordonneesList),...selectedEtapePath }" @click="showInfoEtape(etapeSelectedInList)"/> 
         </GoogleMap>
     </div>
     <div class="col-md-4">
@@ -22,7 +23,7 @@
         </div>
         <div>
           <ul class="list-group">
-            <li class="list-group-item active" aria-current="true">Données :</li>
+            <li class="list-group-item first-child" aria-current="true">Données :</li>
             <li class="list-group-item">Distance du parcours : {{ parcoursDetail.distance }} km </li>
             <li class="list-group-item">Distance parcourue : {{ distParcourue }} km </li>
             <li class="list-group-item">Nombre d'étapes réalisées : {{ etapesModel.length }} </li>
@@ -31,10 +32,19 @@
         </div>
         <div style="margin-top: 10px;">
           <div style="height: 200px; overflow-y: scroll;">
-            <div class="list-group">
-              <li class="list-group-item active sticky-top" aria-current="true">Les étapes :</li>
+            <div class="list-group" ref="etapesList">
+              <li class="list-group-item first-child sticky-top" aria-current="true">Les étapes :</li>
               <template v-for="(etape, index) in etapesModel" :key="index" >
-                <li class="list-group-item">Etape : {{ etape.id }}, duree = {{ DateTimeToString(etape.startDate, etape.endDate) }} </li>
+                <div>
+                  <li type="button" ref="listContainer" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" :class="{'active': index === activeButtonIndex}" @click="onListClick(etape, index)">
+                    Etape du {{ DateToString(etape.startDate!) }}
+                    <div>
+                      <button class="btn btn-primary float*end" @click="showInfoEtape(etape)">
+                        <i class="bi bi-search text-white"></i>
+                      </button>
+                    </div>
+                  </li>
+                </div>
               </template>
           </div>
         </div>
@@ -80,9 +90,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-              <div> {{ etapeSelected?.id }}  </div> 
-              <div> {{ etapeSelected?.distance }}  </div>
-              <div> {{ DateTimeToString(etapeSelected?.startDate, etapeSelected?.endDate) }}  </div> 
+              <div> Début : {{ DateTimeToString(etapeSelected?.startDate!) }} </div>
+              <div> Fin : {{   DateTimeToString(etapeSelected?.endDate!) }} </div>
+              <div> Distance : {{ etapeSelected?.distance }}  km </div>
+              <div> Durée : {{ DateTimeDurationToString(etapeSelected?.startDate, etapeSelected?.endDate) }}  </div> 
       </div>
       <button class="btn btn-primary" data-bs-dismiss="modal" @click="modifyEtape">Modifier</button>
     </div>
@@ -91,7 +102,7 @@
 </template>
   
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import { useRoute } from 'vue-router';
   import { ParcoursModel } from '../models/ParcoursModel';
   import { useParcoursService } from '../composables/ParcoursService';
@@ -101,7 +112,7 @@
   import { useEtapeService } from '../composables/EtapeService';
   import { Modal } from 'bootstrap';
   import { CoordToPosition, CalculDistance, GetZoomMap, GetMiddleCoord } from '../utils/Coordonnes'
-  import { DateTimeToString, getParcoursDuration } from '../utils/DateTime';
+  import { DateTimeDurationToString, getParcoursDuration, DateTimeToString, DateToString } from '../utils/DateTime';
 
 
 
@@ -113,7 +124,8 @@
   const parcoursDetail = ref<ParcoursModel>(await parcoursService.getParcours(parcoursId));
   const etapesModel = ref<Array<EtapeModel>>(await etapeService.list(parcoursId));
   const etapeSelected = ref<EtapeModel | null >();
-
+  const etapeSelectedInList = ref<EtapeModel | null >();
+  const activeButtonIndex = ref<number>(0);
   const distParcourue = computed<number>(()=>{
     return parseFloat(etapesModel.value.reduce((tot, etp) => tot + etp.distance!, 0).toFixed(2));
   })
@@ -142,6 +154,13 @@
     strokeColor: "#39FF14",
     strokeOpacity: 1.0,
     strokeWeight: 2,
+  };
+
+  const selectedEtapePath = {
+    geodesic: true,
+    strokeColor: "#00ffff",
+    strokeOpacity: 1.0,
+    strokeWeight: 3,
   };
  
 
@@ -183,12 +202,35 @@ function modifyEtape(){
   router.push({name: 'etapeModify', params: { parcoursId: parcoursId, etapeId: etapeSelected.value!.id}});
 }
 
+
+const etapesList = ref<HTMLElement>()
+
+function updateSlectedEtape(etape : EtapeModel, indexSelected : number){
+  activeButtonIndex.value = indexSelected;
+  etapeSelectedInList.value = etape;
+}
+
+function onListClick(etape : EtapeModel, indexSelected : number){
+  updateSlectedEtape(etape,indexSelected);
+}
+
+function onEtapeClick(etape : EtapeModel, indexSelected : number){
+  updateSlectedEtape(etape,indexSelected);
+  if (etapesList.value && activeButtonIndex.value != null) {
+    //NextTick attend la mise à jour du DOM
+    nextTick(() => {
+      const activeEtape = etapesList.value!.querySelector('.list-group-item-action.active')
+      if (activeEtape) {
+        activeEtape.scrollIntoView({ block: 'center' })
+      }
+    })
+  }
+}
+
+
 </script>
 
 <style>
-    .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
-        background-color: #1e3d59 !important;
-    }
 
 </style>
   

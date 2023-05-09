@@ -1,11 +1,4 @@
 <template>
-<GoogleMap
-          api-key=""
-          style="width: 100%; height: 900px"
-          :zoom="5"
-          :center="{ lat: 48.419603, lng: -4.459316 }"
-          >
-        </GoogleMap>
     <spinner v-if="loading" />
     <div v-else class="row">
       <div class="col-md-6 offset-md-3">
@@ -25,8 +18,6 @@
         </form>
       </div>
     </div>
-    
-
   </template>
   
   <script setup lang="ts">
@@ -38,8 +29,8 @@
   import { useParcoursService } from '../composables/ParcoursService';
   import { CoordonnesModel } from '../models/CoordonnesModel';
   import spinner from '../components/Spinner.vue'
-import { CalculDistance } from '../utils/Coordonnes';
-import { GoogleMap } from 'vue3-google-map';
+  import { CalculDistance } from '../utils/Coordonnes';
+  import { GoogleMap } from 'vue3-google-map';
 
   useForms();
   const router = useRouter();
@@ -73,7 +64,6 @@ async function submitForm() {
 
 async function update(id : number) {
     var parcours: ParcoursModel;
-    var parcours2: ParcoursModel ;
     const coord = ref<Array<CoordonnesModel>>([]);
         try{
           parcours  = await parcoursService.getParcours(id);

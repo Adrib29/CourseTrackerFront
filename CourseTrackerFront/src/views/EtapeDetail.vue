@@ -11,7 +11,7 @@
         :center="center"
       >
       <Polyline :options="flightPath" />
-      <Polyline :options="etapePath" />
+      <Polyline v-if="etapeModel.coordonneesList != null" :options="etapePath" />
       </GoogleMap>
       <div class="row">
         <button type="button" class="btn btn-danger" @click="deleteEtape"> Supprimer</button>
@@ -27,10 +27,8 @@
   import { useEtapeService } from '../composables/EtapeService';
   import { useRoute } from 'vue-router';
   import { useParcoursService } from '../composables/ParcoursService';
-  import { CoordonnesModel } from '../models/CoordonnesModel';
-  import { CoordonnesEtapeModel } from '../models/CoordonnesEtapeModel';
   import router from '../router';
-  import { GetMiddleCoord } from '../utils/Coordonnes';
+  import { CoordToPosition, GetMiddleCoord } from '../utils/Coordonnes';
 
 
 
@@ -47,13 +45,13 @@
 
   //Initialisation du centre de la map
   let MiddleCoord = GetMiddleCoord(etapeModel.value?.coordonneesList)
-  let center = MiddleCoord
+  let center = MiddleCoord.latitude != null && MiddleCoord.longitude != null
   ? { lat: MiddleCoord.latitude, lng: MiddleCoord.longitude }
   : { lat: 48.419603, lng: -4.459316 };
 
 
     const flightPath = {
-      path: transformerCoordonnees(parcoursModel.value.coordonneesList),
+      path: CoordToPosition(parcoursModel.value.coordonneesList),
       geodesic: true,
       strokeColor: "#FF0000",
       strokeOpacity: 1.0,
@@ -61,19 +59,12 @@
     };
 
     const etapePath = {
-      path: transformerCoordonnees(etapeModel.value.coordonneesList),
+      path: CoordToPosition(etapeModel.value.coordonneesList),
       geodesic: true,
       strokeColor: "#39FF14",
       strokeOpacity: 1.0,
       strokeWeight: 2,
     };
-
-
-  function transformerCoordonnees(coordonneesList: Array<CoordonnesEtapeModel> | Array<CoordonnesModel> ) {
-    return coordonneesList.map(coord => {
-      return {lat: coord.latitude, lng: coord.longitude};
-    });
-  }
 
   async function deleteEtape() {
     await etapeSerrvice.deleteEtape(etapeId);

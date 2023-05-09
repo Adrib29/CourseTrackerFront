@@ -36,12 +36,14 @@
       <div class="modal-body">
               <div> Êtes vous sûre de vouloir supprimer ce parcours ? </div> 
       </div>
-      <button class="btn btn-danger" data-bs-dismiss="modal" @click="removeParcours">Supprimer</button>
-      <button class="btn btn-primary" data-bs-dismiss="modal">Annuler</button>
+      <div class="btn-group" style="margin-bottom: 5px;">
+        <button class="btn btn-danger mx-2" data-bs-dismiss="modal" @click="removeParcours">Supprimer</button>
+        <button class="btn btn-primary mx-2" data-bs-dismiss="modal">Annuler</button>
+      </div>
     </div>
   </div>
 </div>
-  </template>
+</template>
   
   <script setup lang="ts">
   import { ref } from 'vue';
@@ -97,9 +99,5 @@ return valeurs;
 
   }
   
-  
-function mounted() {
-throw new Error('Function not implemented.');
-}
 </script>
   

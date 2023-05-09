@@ -24,9 +24,14 @@ onErrorCaptured((e: unknown) => {
 </script>
 
 <style>
-    .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
+    .btn-primary, .btn-primary:active, .btn-primary:visited {
         background-color: #1e3d59 !important;
+        border-color: #1e3d59 !important;
         
+    }
+    .btn-primary:hover{
+      background-color: #061149 !important;
+      border-color: #061149 !important;
     }
     .btn-secondary, .btn-secondary:hover, .btn-secondary:active, .btn-secondary:visited {
         background-color: #f5f0e1 !important;
@@ -38,12 +43,19 @@ onErrorCaptured((e: unknown) => {
       color: #1e3d59 !important;
     }
     
-    .list-group-item:first-child{
+    .list-group-item.first-child{
       background-color: #1e3d59 !important;
+      color: #ffffff !important;
     }
 
     .progress-bar {
     background-color: #ff6e40 !important;
     }
+
+    .list-group-item.active {
+      background-color: #ff6e40 !important;
+      border-color: black;
+    }
+    
 
 </style>

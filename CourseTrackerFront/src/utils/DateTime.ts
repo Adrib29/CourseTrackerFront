@@ -2,13 +2,29 @@ import { EtapeModel } from '@/models/EtapeModel';
 import { formatDuration, intervalToDuration, Duration, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export function DateTimeToString(startDate?: Date, endDate?: Date ) {
+export function DateTimeToString(date: Date){
+    var newDate = new Date(date);
+    if(newDate){
+        return newDate.toLocaleString("fr-FR");
+    }
+    return "Aucune date";
+}
+
+export function DateToString(date: Date){
+    var newDate = new Date(date);
+    if(newDate){
+        return newDate.toLocaleDateString("fr-FR");
+    }
+    return "Aucune date";
+}
+
+export function DateTimeDurationToString(startDate?: Date, endDate?: Date ) {
     if(startDate && endDate){        
         const duration: Duration = getDuration(startDate,endDate)
         const valeur: string = DurationToString(duration);
         return valeur;
     }
-    return "Aucune durée"
+    return "Aucune durée";
 
 }
 
@@ -51,8 +67,6 @@ export function getParcoursDuration(etapes: Array<EtapeModel>): String{
             totalDuration.days! += duration.days!;
             totalDuration.hours! += duration.hours!;
             totalDuration.minutes! += duration.minutes!;
-            console.log(duration.hours);
-
         }
     }
     

@@ -4,19 +4,29 @@ import { CoordonnesModel } from "../models/CoordonnesModel";
 
 
 export function CoordToPosition(coordonneesList: Array<CoordonnesEtapeModel> | Array<CoordonnesModel> ) {
-    return coordonneesList.map(coord => {
-      return {lat: coord.latitude, lng: coord.longitude};
-    });
+    if(coordonneesList.length > 0){
+        return coordonneesList.map(coord => {
+            return {lat: coord.latitude, lng: coord.longitude};
+          });
+    }
+    return null;
 }
 
 export function GetMiddleCoord(coordonneesList: Array<CoordonnesEtapeModel> | Array<CoordonnesModel> ) {
     var start = coordonneesList.at(0);
     var end = coordonneesList.at(coordonneesList.length-1);
-    var lat = (start!.latitude + end!.latitude)/2;
-    var lng = (start!.longitude + end!.longitude)/2;
-    var id = coordonneesList.at(0)!.id;
-    var middleCoord : CoordonnesEtapeModel = {latitude: lat, longitude: lng, etape_id: id!}
+    
+    if(start && end){
+        var lat = (start!.latitude + end!.latitude)/2;
+        var lng = (start!.longitude + end!.longitude)/2;
+        var id = coordonneesList.at(0)!.id;
+        var middleCoord : CoordonnesEtapeModel = {latitude: lat, longitude: lng, etape_id: id!}
+        return middleCoord;
+    }
+    var middleCoord : CoordonnesEtapeModel = {latitude: 48.419603, longitude: -4.459316, etape_id: id!}
     return middleCoord;
+
+
 }
 
 export function CalculDistance(coordonneesList: Array<CoordonnesEtapeModel> | Array<CoordonnesModel> ) : number{

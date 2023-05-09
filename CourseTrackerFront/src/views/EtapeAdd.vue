@@ -1,35 +1,31 @@
 <template>
     <spinner v-if="loading" />
     <div v-else>
-        <GoogleMap 
-        api-key=""
-        style="width: 100%; height: 600px"
-        :center="center"
-        :zoom="15"
-        @click="addMarker($event)"
-        >
-        <Polyline :options="flightPath" />
-        <template v-for="(etape, index) in etapesModel" :key="index" >
-              <Polyline v-if="etape.coordonneesList" :options="{ path: CoordToPosition(etape.coordonneesList),...etapePath }"> 
-
-              </Polyline>
-        </template>
-        <Marker v-for="(marker, index) in markers" :key="index" :options="index === 0 ? {position:marker,...markerOptions} : {position:marker,...markerOptionsArrivee}" @dragend="onMarkerDragEnd(index, $event)">
-
-        </Marker>
-        </GoogleMap>
-
-        <form class="row g-3">
-          <div class="mb-3">
-            <label class="from-control">Date de fin : </label>
-            <input v-model="startDate" type="datetime-local" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="from-control">Date de fin : </label>
-            <input v-model="endDate" type="datetime-local" class="form-control" required>
-          </div>
-        </form>
-        <button class="btn btn-primary mb-3" background-color="#1e3d59" @click="addEtape">Valider</button>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <GoogleMap 
+                        api-key=""
+                        style="width: 100%; height: 700px"
+                        :center="center"
+                        :zoom="15"
+                        @click="addMarker($event)"
+                        >
+                        <Polyline :options="flightPath" />
+                        <template v-for="(etape, index) in etapesModel" :key="index" >
+                            <Polyline v-if="etape.coordonneesList" :options="{ path: CoordToPosition(etape.coordonneesList),...etapePath }" /> 
+                        </template>
+                        <Marker v-for="(marker, index) in markers" :key="index" :options="index === 0 ? {position:marker,...markerOptions} : {position:marker,...markerOptionsArrivee}" @dragend="onMarkerDragEnd(index, $event)">
+                        </Marker>
+                    </GoogleMap>
+                </div>
+                <div class="col-md-4">
+                    <h1>{{ parcoursModel.nom }}</h1>
+                    <h3> Nouvelle étape : </h3>
+                    <EtapeForm :markerPlaced="markers.length >= 2" @submitForm="addEtape" />
+                </div>
+            </div>
+        </div>      
     </div>
   </template>
   
@@ -45,6 +41,7 @@ import { EtapeModel } from '../models/EtapeModel';
 import { useEtapeService } from '../composables/EtapeService';
 import router from '../router';
 import { CoordToPosition, CalculDistance } from '../utils/Coordonnes';
+import EtapeForm from '../components/EtapeForm.vue';
 
 const route = useRoute();
 const parcoursId = +route.params.parcoursId;
@@ -86,8 +83,10 @@ const etapePath = {
 };
 
 function addMarker(event: google.maps.MapMouseEvent ) {
+        var idx = markers.value.length;
         if(markers.value.length < 2){
             markers.value.push({ lat: event.latLng!.lat(), lng: event.latLng!.lng() });
+            onMarkerDragEnd(idx, event);
         }
 }
 
@@ -100,15 +99,18 @@ function getClosestPointOnPolyline(lat: number, long: number) {
     let closestPoint: Marker = { lat: null, lng: null,};
     let point = {lat: lat,lng: long,};
     
-    flightPath.path.forEach((polylinePoint) => {
+    if(flightPath.path != null ){
+        flightPath.path.forEach((polylinePoint) => {
 
-    const distance = getDistance(point.lat, polylinePoint.lat,point.lng, polylinePoint.lng);
-    if (distance < closestDistance) {
-        closestDistance = distance;
-        closestPoint.lat = polylinePoint.lat;
-        closestPoint.lng = polylinePoint.lng;
+        const distance = getDistance(point.lat, polylinePoint.lat,point.lng, polylinePoint.lng);
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestPoint.lat = polylinePoint.lat;
+            closestPoint.lng = polylinePoint.lng;
+        }
+        });
     }
-    });
+
     return closestPoint;
 }
 function getDistance(lat1: number, lat2: number, lng1: number, lng2: number) {
@@ -119,33 +121,27 @@ function getDistance(lat1: number, lat2: number, lng1: number, lng2: number) {
     return result
 }
 
-
 function onMarkerDragEnd(index: number, event: google.maps.MapMouseEvent) {
     const newPosition = event.latLng!;   
     const lat = newPosition.lat();
     const lng = newPosition.lng();    
     var closestPoint = getClosestPointOnPolyline(lat, lng);           
     addMarkerOnPolyline(closestPoint.lat!,closestPoint.lng!, index);
-    
 }
 
-const startDate = ref();
-const endDate = ref();
-async function addEtape(){
+async function addEtape(startDate: string, endDate: string){
 
-    const formData = new FormData();
-    formData.append('startDate', startDate.value);
-    formData.append('endDate', endDate.value);
-    console.log(startDate);
-    console.log(endDate);
+    const dateStart = new Date(startDate);
+    const dateEnd = new Date(endDate);
+    console.log(dateStart);
+    console.log(dateEnd);
     if (parcoursModel.value?.coordonneesList?.[0]) {
-    center.lat = parcoursModel.value.coordonneesList[0].latitude;
-    center.lng = parcoursModel.value.coordonneesList[0].longitude;
+        center.lat = parcoursModel.value.coordonneesList[0].latitude;
+        center.lng = parcoursModel.value.coordonneesList[0].longitude;
     }
 
     const coordinates: CoordonnesEtapeModel[] = [];
-    var coord: CoordonnesEtapeModel[] = [];
-    const nouvelleEtape: EtapeModel = { parcours_id: parcoursId, coordonneesList: coordinates, startDate: startDate.value, endDate: endDate.value };
+    const nouvelleEtape: EtapeModel = { parcours_id: parcoursId, coordonneesList: coordinates, startDate: dateStart, endDate: dateEnd };
     var etape: EtapeModel;
     loading.value=true;
     try{
@@ -189,7 +185,7 @@ async function update(id : number) {
         if(coord){
             
             var distance = CalculDistance(coord);
-            const etapeToSave: EtapeModel = { id: etape.id, coordonneesList: coord, parcours_id: parcoursId, distance: distance, startDate: startDate.value, endDate: endDate.value  };
+            const etapeToSave: EtapeModel = { id: etape.id, coordonneesList: coord, parcours_id: parcoursId, distance: distance, startDate: etape.startDate, endDate: etape.endDate  };
             await etapeService.updateEtape(parcoursId,etapeToSave);
             console.log(distance);
         }

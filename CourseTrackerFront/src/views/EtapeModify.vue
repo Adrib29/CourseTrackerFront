@@ -1,11 +1,10 @@
 <template>
-    <div>
-      <h1>{{ parcoursModel.nom }}</h1>
-      <h2> {{ etapeModel.id  }}  </h2>
-      <h2> {{ etapeModel.parcours_id  }}  </h2>
-      <GoogleMap 
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8">
+    <GoogleMap 
         api-key=""
-        style="width: 100%; height: 500px"
+        style="width: 100%; height: 700px"
         :center="center"
         :zoom="15"
         >
@@ -13,12 +12,22 @@
         <Polyline v-if="etapeModel.coordonneesList" :options="{ path: CoordToPosition(etapeModel.coordonneesList),...etapePath }"> 
         </Polyline>
         <Marker v-for="(marker, index) in markers" :key="index" :options="index === 0 ? {position:marker,...markerOptions} : {position:marker,...markerOptionsArrivee}" @dragend="onMarkerDragEnd(index, $event)">
-
         </Marker>
-        </GoogleMap>
-        <button class="btn btn-primary mb-3" background-color="#1e3d59" @click="saveEtape">Sauvegarder</button>      
+    </GoogleMap>
     </div>
-  </template>
+    <div class="col-md-4">
+        <div>
+            <h1>{{ parcoursModel.nom }}</h1>
+            <h2> {{ etapeModel.id  }}  </h2>
+            <h2> {{ etapeModel.parcours_id  }}  </h2>
+        </div>
+        <div>
+            <EtapeForm :markerPlaced="markers.length >= 2" :etapeModel="etapeModel" @submitForm="saveEtape" />
+        </div>
+    </div>
+    </div>
+</div>
+</template>
   
   <script setup lang="ts">
   import { ref } from 'vue';
@@ -32,7 +41,7 @@
   import { onMounted } from 'vue'
   import router from '../router';
   import { CoordonnesEtapeModel } from '../models/CoordonnesEtapeModel';
-
+  import EtapeForm from '../components/EtapeForm.vue';
 
 
   const route = useRoute();
@@ -48,6 +57,7 @@
     lat: number | null;
     lng: number | null;
   }
+
   const markers = ref<{ lat: number, lng: number }[]>([]);
   const markerOptions = {label: "Depart", title: "Depart", draggable: true};
   const markerOptionsArrivee = {label: "Arrivee", title: "Arrivee", draggable: true};
@@ -84,15 +94,18 @@
         let closestPoint: Marker = { lat: null, lng: null,};
         let point = {lat: lat,lng: long,};
         
-        flightPath.path.forEach((polylinePoint) => {
+        if(flightPath.path != null ){
+            flightPath.path.forEach((polylinePoint) => {
 
-        const distance = getDistance(point.lat, polylinePoint.lat,point.lng, polylinePoint.lng);
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestPoint.lat = polylinePoint.lat;
-            closestPoint.lng = polylinePoint.lng;
+            const distance = getDistance(point.lat, polylinePoint.lat,point.lng, polylinePoint.lng);
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestPoint.lat = polylinePoint.lat;
+                closestPoint.lng = polylinePoint.lng;
+            }
+            });
         }
-        });
+        
         return closestPoint;
     }
     function getDistance(lat1: number, lat2: number, lng1: number, lng2: number) {
@@ -110,26 +123,22 @@
         const lng = newPosition.lng();    
         var closestPoint = getClosestPointOnPolyline(lat, lng);           
         addMarkerOnPolyline(closestPoint.lat!,closestPoint.lng!, index);
-        
     }
 
 
     onMounted(() => {
         
         let start = etapeModel.value.coordonneesList.at(0);
-        let end = etapeModel.value.coordonneesList.at(etapeModel.value.coordonneesList.length-1);
-        console.log(start?.latitude);
-        console.log(start?.longitude);
-        console.log(end?.latitude);
-        console.log(end?.longitude);
-        
+        let end = etapeModel.value.coordonneesList.at(etapeModel.value.coordonneesList.length-1);        
         markers.value.push({ lat: start!.latitude, lng: start!.longitude });
         markers.value.push({ lat: end!.latitude, lng: end!.longitude });
-        /*addMarkerOnPolyline(start!.latitude,start!.longitude,0);
-        addMarkerOnPolyline(end!.latitude,end!.longitude,1);*/
     })
 
-  async function saveEtape() {
+  async function saveEtape(startDate: string, endDate: string) {
+    
+    const dateStart = new Date(startDate);
+    const dateEnd = new Date(endDate);
+
     var etape: EtapeModel;
     var saveCoord : Boolean = false;
     var reverseCoord : Boolean = false;
@@ -154,9 +163,8 @@
              }
         if(coord){
             var distance = CalculDistance(coord);
-            const etapeToSave: EtapeModel = { id: etape.id, coordonneesList: coord, parcours_id: parcoursId, distance: distance };
+            const etapeToSave: EtapeModel = { id: etape.id, coordonneesList: coord, parcours_id: parcoursId, distance: distance, startDate: dateStart, endDate: dateEnd  };
             await etapeService.updateEtape(parcoursId,etapeToSave);
-            console.log(distance);
         }
         } catch(e){
 
