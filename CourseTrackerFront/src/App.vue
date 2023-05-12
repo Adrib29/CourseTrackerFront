@@ -27,15 +27,30 @@ onErrorCaptured((e: unknown) => {
     .btn-primary, .btn-primary:active, .btn-primary:visited {
         background-color: #1e3d59 !important;
         border-color: #1e3d59 !important;
-        
     }
+
+    .bg-custom-primary {
+      background-color: #1e3d59;
+    }
+
+
     .btn-primary:hover{
       background-color: #061149 !important;
       border-color: #061149 !important;
     }
-    .btn-secondary, .btn-secondary:hover, .btn-secondary:active, .btn-secondary:visited {
+
+    .btn-secondary, .btn-secondary:hover, .btn-secondary:active, .btn-secondary:visited .bg-secondary{
         background-color: #f5f0e1 !important;
         color: #1e3d59 !important;
+    }
+
+    .bg-custom-secondary {
+      background-color: #f5f0e1;
+    }
+
+    .btn-secondary:hover{
+      background-color: #d3cfc3 !important;
+      color: #1e3d59 !important;
     }
 
     .dropdown-item:focus, .dropdown-item:hover {

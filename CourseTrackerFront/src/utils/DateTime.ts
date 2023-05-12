@@ -18,7 +18,7 @@ export function DateToString(date: Date){
     return "Aucune date";
 }
 
-export function DateTimeDurationToString(startDate?: Date, endDate?: Date ) {
+export function DurationDateTimeToString(startDate?: Date, endDate?: Date ) {
     if(startDate && endDate){        
         const duration: Duration = getDuration(startDate,endDate)
         const valeur: string = DurationToString(duration);
@@ -32,8 +32,6 @@ function getDuration(startDate: Date, endDate: Date): Duration{
     const startDate2: Date = new Date(startDate);
     const endDate2: Date = new Date(endDate);
     if(isValid(startDate2) && isValid(endDate2)){
-        console.log("valid");
-
         const duration = intervalToDuration({ start: startDate2, end: endDate2 });
         return duration;
     }
@@ -82,8 +80,6 @@ function DurationToString(duration: Duration): string{
             zero: false,
             locale: fr
           });
-        
-        console.log(formattedDuration);
         return formattedDuration;
         
     }

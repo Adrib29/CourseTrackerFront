@@ -7,5 +7,7 @@ export interface EtapeModel {
     distance?: number;
     startDate?: Date;
     endDate?: Date;
+    duree?: Duration;
+    vitesse?: number;
 }
   

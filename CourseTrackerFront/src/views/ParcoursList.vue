@@ -1,17 +1,20 @@
 <template>
 <div class="container">
-  <div class="row">
-    <div class="col-md-6 col-lg-4" v-for="(parcours, index) in parcoursList" :key="index" :parcoursModel="parcours" >
+  <div class="row" v-if="parcoursList.length <= 0">
+      <p> Aucun parcours n'a été enregistré !</p>
+  </div>
+  <div v-else class="row" >
+    <div class="col-md-6 col-lg-4" v-for="(parcours, index) in parcoursList" :key="index" >
       <div class="card text-center mb-3 shadow p-3 mb-5 bg-body-tertiary rounded" style="width: 18rem;">
         <div class="card-header d-flex justify-content-between">
             <h5 class="card-title">{{ parcours.nom }}</h5>
-            <button type="button" class="btn-close btn btn-large btn-danger" aria-label="Close" @click="parcoursSelected = parcours" data-bs-toggle="modal" data-bs-target="#ParcoursModal"></button>        
+            <DeleteParcours :parcours-model="parcours" class-button="btn-close btn btn-large btn-danger" @deleted="updateParcours"> </DeleteParcours>
         </div>
         <div class="progress">
           <div class="progress-bar overflow-visible" role="progressbar" style="min-width: 2em;" :style="{width: distanceRealise.at(index) + '%'}" :aria-valuenow="distanceRealise.at(index)?.toString()" aria-valuemin="0" aria-valuemax="100">{{ distanceRealise.at(index) }}%</div>
         </div>
         <div class="card-body ">
-          <RouterLink href="" class="btn btn-primary" :to="{ name: 'parcoursDetail', params: { parcoursId: parcours.id } }"> Détails </RouterLink>
+          <RouterLink class="btn btn-primary" :to="{ name: 'parcoursDetail', params: { parcoursId: parcours.id } }"> Détails </RouterLink>
         </div> 
       </div>
     </div>
@@ -49,10 +52,8 @@
   import { ref } from 'vue';
   import { ParcoursModel } from '../models/ParcoursModel';
   import { useParcoursService } from '../composables/ParcoursService';
-  import router from '../router';
-  import { EtapeModel } from '../models/EtapeModel';
   import { useEtapeService } from '../composables/EtapeService';
-
+  import DeleteParcours from '../components/DeleteParcours.vue';
   const parcoursService = useParcoursService();
   const parcoursList = ref<Array<ParcoursModel>>(await parcoursService.list());
 
@@ -60,44 +61,29 @@
   const etapeService = useEtapeService();
   const distanceRealise = ref<Array<Number>>(await getDistanceParcours());
 
-
-
   async function removeParcours(){
     await parcoursService.deleteParcours(parcoursSelected.value!.id!);
     parcoursList.value = await parcoursService.list();
   }
 
+  async function updateParcours(){
+    parcoursList.value = await parcoursService.list();
+  }
+
   async function getDistanceParcours(): Promise<number[]> {
 
-const valeurs : number[] = [];
-for (let i = 0; i < parcoursList.value.length; i++) {
-  const etapeList = await etapeService.list(parcoursList.value.at(i)!.id!);
-  let distanceTotal = parcoursList.value.at(i)!.distance;
-  let distanceParcourue = 0;
-  for (let j = 0; j < etapeList.length; j++) {
-    distanceParcourue += etapeList[j].distance ?? 0;
-  }
-  valeurs.push(Math.floor((distanceParcourue / distanceTotal) * 100));
-}
-return valeurs;
-}
-
-  async function getTotalDistance(parcours: ParcoursModel) {
-    try{
-      const listEtapes  = ref<Array<EtapeModel>>(await etapeService.list(parcours.id!));
-        
-      const total = listEtapes.value.reduce((totalDistance, etape) => totalDistance + (etape.distance ?? 0 ),0);
-      
-      console.log("result" + (total*100)/parcours.distance );
-      return (total*100)/parcours.distance;
-
-    }catch(e){
-
+  const valeurs : number[] = [];
+  for (let i = 0; i < parcoursList.value.length; i++) {
+    const etapeList = await etapeService.list(parcoursList.value.at(i)!.id!);
+    let distanceTotal = parcoursList.value.at(i)!.distance;
+    let distanceParcourue = 0;
+    for (let j = 0; j < etapeList.length; j++) {
+      distanceParcourue += etapeList[j].distance ?? 0;
     }
-
-    return 0;
-
+    valeurs.push(Math.floor((distanceParcourue / distanceTotal) * 100));
   }
+  return valeurs;
+}
   
 </script>
   

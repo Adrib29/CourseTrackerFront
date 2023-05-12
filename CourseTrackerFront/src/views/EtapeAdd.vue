@@ -3,7 +3,7 @@
     <div v-else>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-8" >
                     <GoogleMap 
                         api-key=""
                         style="width: 100%; height: 700px"
@@ -19,7 +19,7 @@
                         </Marker>
                     </GoogleMap>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 border shadow p-3 mb-5">
                     <h1>{{ parcoursModel.nom }}</h1>
                     <h3> Nouvelle étape : </h3>
                     <EtapeForm :markerPlaced="markers.length >= 2" @submitForm="addEtape" />
@@ -153,9 +153,8 @@ async function addEtape(startDate: string, endDate: string){
 
     }
     loading.value=false;
-    router.push({ name: 'parcoursDetail', params: { parcoursId: parcoursId } })
 
-
+    router.push({ name: 'parcoursDetail', params: { parcoursId: parcoursId } });
 
 }
 

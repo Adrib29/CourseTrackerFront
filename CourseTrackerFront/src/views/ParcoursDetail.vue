@@ -14,15 +14,23 @@
           <template v-for="(etape, index) in etapesModel" :key="index" >
             <Polyline v-if="etape.coordonneesList" :options="{ path: CoordToPosition(etape.coordonneesList),...etapePath }" @click="onEtapeClick(etape, index)" /> 
           </template>
+          <template>
             <Polyline v-if="etapeSelectedInList?.coordonneesList" :options="{ path: CoordToPosition(etapeSelectedInList.coordonneesList),...selectedEtapePath }" @click="showInfoEtape(etapeSelectedInList)"/> 
+          </template>
         </GoogleMap>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4 border shadow p-3 mb-5">
+      <div class="d-flex justify-content-between align-items-center shadow p-2 mb-3 bg-custom-primary rounded">
+        <h3 class="text-white m-0"> Parcours : {{ parcoursDetail.nom }} </h3> 
         <div>
-          <h3> Parcours : {{ parcoursDetail.nom }} </h3>  
-        </div>
+          <button type="button" class="btn btn-secondary m-4" data-bs-toggle="modal" data-bs-target="#FormModal"> 
+            <i class="bi bi-gear"></i>  
+          </button>
+          <DeleteParcours :parcours-model="parcoursDetail" text-button="X"  @deleted="router.push({ name: 'parcours' })" class-button="btn btn-danger"> </DeleteParcours>
+        </div> 
+      </div>
         <div>
-          <ul class="list-group">
+          <ul class="list-group border">
             <li class="list-group-item first-child" aria-current="true">Données :</li>
             <li class="list-group-item">Distance du parcours : {{ parcoursDetail.distance }} km </li>
             <li class="list-group-item">Distance parcourue : {{ distParcourue }} km </li>
@@ -31,31 +39,51 @@
           </ul>
         </div>
         <div style="margin-top: 10px;">
-          <div style="height: 200px; overflow-y: scroll;">
-            <div class="list-group" ref="etapesList">
-              <li class="list-group-item first-child sticky-top" aria-current="true">Les étapes :</li>
+          <div style="height: 380px; overflow-y: scroll;">
+            <div class="list-group border" ref="etapesList">
+              <li class="list-group-item first-child sticky-top d-flex align-items-center" aria-current="true">
+                Les étapes :
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-square" ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><RouterLink  class="dropdown-item" :to="{ name: 'etapeAdd', params: { parcoursId: parcoursId } }">
+                                Ajouter une étape manuellement
+                          </RouterLink>
+                      </li>
+                      <li><RouterLink  class="dropdown-item" :to="{ name: 'etapeAddFichier', params: { parcoursId: parcoursId } }">
+                                Ajouter une étape avec une trace
+                          </RouterLink>
+                      </li>
+                    </ul>
+              </div>                  
+              </li>
               <template v-for="(etape, index) in etapesModel" :key="index" >
                 <div>
                   <li type="button" ref="listContainer" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" :class="{'active': index === activeButtonIndex}" @click="onListClick(etape, index)">
                     Etape du {{ DateToString(etape.startDate!) }}
                     <div>
-                      <button class="btn btn-primary float*end" @click="showInfoEtape(etape)">
+                      <button class="btn btn-primary m-2 ms-auto" @click="showInfoEtape(etape)">
                         <i class="bi bi-search text-white"></i>
                       </button>
+                      <RouterLink href="" class="btn btn-primary m-2 ms-auto" :to="{ name: 'etapeDetail', params: { etapeId: etape.id } }">
+                        <i class="bi bi-clipboard-data"></i>
+                      </RouterLink>                     
                     </div>
                   </li>
                 </div>
               </template>
           </div>
         </div>
-        <div style="margin-top: 10px;">
-          <button type="button" class="btn btn-danger" @click="deleteParcours"> Supprimer</button>
-          <RouterLink class="btn btn-primary" :to="{ name: 'etapesList', params: { parcoursId: parcoursId } }"> Les étapes </RouterLink>
-          <RouterLink class="btn btn-primary" :to="{ name: 'etapeAdd', params: { parcoursId: parcoursId } }"> Ajouter etape </RouterLink>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#FormModal"> Modifier </button>
-        </div>
       </div>
     </div>
+    <div class="row">
+      <div style="margin-top: 10px;">
+          
+          
+        </div>
+      </div>
   </div>
 </div>
     
@@ -86,16 +114,12 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="EtapeModal">Détail de l'étape</h1>
+        <h1 class="modal-title fs-5" id="EtapeModal">Etape </h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-              <div> Début : {{ DateTimeToString(etapeSelected?.startDate!) }} </div>
-              <div> Fin : {{   DateTimeToString(etapeSelected?.endDate!) }} </div>
-              <div> Distance : {{ etapeSelected?.distance }}  km </div>
-              <div> Durée : {{ DateTimeDurationToString(etapeSelected?.startDate, etapeSelected?.endDate) }}  </div> 
+        <DetailEtape v-if="etapeSelected" :etape-model="etapeSelected" :parcours-id="parcoursId"/>
       </div>
-      <button class="btn btn-primary" data-bs-dismiss="modal" @click="modifyEtape">Modifier</button>
     </div>
   </div>
 </div>
@@ -112,8 +136,9 @@
   import { useEtapeService } from '../composables/EtapeService';
   import { Modal } from 'bootstrap';
   import { CoordToPosition, CalculDistance, GetZoomMap, GetMiddleCoord } from '../utils/Coordonnes'
-  import { DateTimeDurationToString, getParcoursDuration, DateTimeToString, DateToString } from '../utils/DateTime';
-
+  import { getParcoursDuration, DateTimeToString, DateToString } from '../utils/DateTime';
+  import DetailEtape from '../components/DetailEtape.vue'
+  import DeleteParcours from '../components/DeleteParcours.vue';
 
 
   const route = useRoute();
@@ -125,11 +150,11 @@
   const etapesModel = ref<Array<EtapeModel>>(await etapeService.list(parcoursId));
   const etapeSelected = ref<EtapeModel | null >();
   const etapeSelectedInList = ref<EtapeModel | null >();
-  const activeButtonIndex = ref<number>(0);
+  const activeButtonIndex = ref<number>(-1);
   const distParcourue = computed<number>(()=>{
     return parseFloat(etapesModel.value.reduce((tot, etp) => tot + etp.distance!, 0).toFixed(2));
   })
-
+  const etapesList = ref<HTMLElement>()
   const nom = ref("");
   const loading = ref(false);
   const zoomValue = GetZoomMap(parcoursDetail.value.coordonneesList);
@@ -154,6 +179,7 @@
     strokeColor: "#39FF14",
     strokeOpacity: 1.0,
     strokeWeight: 2,
+    zIndex: 1,
   };
 
   const selectedEtapePath = {
@@ -161,14 +187,8 @@
     strokeColor: "#00ffff",
     strokeOpacity: 1.0,
     strokeWeight: 3,
+    zIndex: 2,
   };
- 
-
-
-  async function deleteParcours(){
-    await parcoursService.deleteParcours(parcoursId);
-    router.push({ name: 'parcours' });
-  }
 
   function showInfoEtape(etape : EtapeModel){
       etapeSelected.value = etape;
@@ -198,13 +218,6 @@
     router.push('/parcours')
 }
 
-function modifyEtape(){
-  router.push({name: 'etapeModify', params: { parcoursId: parcoursId, etapeId: etapeSelected.value!.id}});
-}
-
-
-const etapesList = ref<HTMLElement>()
-
 function updateSlectedEtape(etape : EtapeModel, indexSelected : number){
   activeButtonIndex.value = indexSelected;
   etapeSelectedInList.value = etape;
@@ -226,6 +239,7 @@ function onEtapeClick(etape : EtapeModel, indexSelected : number){
     })
   }
 }
+
 
 
 </script>

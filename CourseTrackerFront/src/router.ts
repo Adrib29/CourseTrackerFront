@@ -7,6 +7,7 @@ import EtapesList from './views/EtapesList.vue';
 import EtapeDetail from './views/EtapeDetail.vue';
 import EtapeAdd from './views/EtapeAdd.vue';
 import EtapeModify from './views/EtapeModify.vue';
+import EtapeAddFichier from './views/EtapeAddFichier.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -40,6 +41,11 @@ const router = createRouter({
       path: '/parcours/:parcoursId/etape/:etapeId',
       name: 'etapeDetail',
       component: EtapeDetail
+    },
+    {
+      path: '/parcours/:parcoursId/etape/add',
+      name: 'etapeAddFichier',
+      component: EtapeAddFichier
     },
     {
       path: '/parcours/:parcoursId/etape/add',

@@ -16,21 +16,37 @@
               <li><RouterLink to="/parcours" class="dropdown-item" > Mes parcours </RouterLink></li>
               <li><RouterLink to="/parcours/add" class="dropdown-item" > Ajouter un parcours </RouterLink></li>
             </ul>
-          </div>
+      </div>
           
       <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-
+        <li class="nav-item">            
         </li>
       </ul>
+          <button type="button" @click="goBack" class="btn btn-secondary btn-lg mx-2">
+            <i class="bi bi-arrow-left-square"></i>
+          </button>
+          <button type="button" @click="goFoward" class="btn btn-secondary btn-lg mx-2">
+            <i class="bi bi-arrow-right-square" ></i>
+          </button>
     </div>
   </div>
 </nav>
 </template>
 
 <script setup lang="ts">
+import router from '../router';
+
+
+function goBack(){
+  router.go(-1)
+}
+
+function goFoward(){
+  router.go(1)
+}
 
 </script>
+
 
 
 <style>

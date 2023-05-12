@@ -24,7 +24,6 @@
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
   import { Form } from 'vee-validate';
-  import { useForms } from '../composables/Forms';
   import { ParcoursModel } from '../models/ParcoursModel';
   import { useParcoursService } from '../composables/ParcoursService';
   import { CoordonnesModel } from '../models/CoordonnesModel';
@@ -32,7 +31,7 @@
   import { CalculDistance } from '../utils/Coordonnes';
   import { GoogleMap } from 'vue3-google-map';
 
-  useForms();
+ 
   const router = useRouter();
   const parcoursService = useParcoursService();
   const submitFailed = ref(false);
